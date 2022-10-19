@@ -1,6 +1,8 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import pickle as pkl
+import scipy.sparse as sp
 import argparse
 from sklearn.decomposition import PCA
 import pickle
@@ -12,6 +14,43 @@ from operator import itemgetter
 # Boilerplate parts of this code file were originally forked from
 # https://github.com/JiaxuanYou/graph-generation/
 
+# load cora, citeseer and pubmed dataset
+def Graph_load(data = 'cora'):
+    '''
+    Load a single graph dataset
+    :param dataset: dataset name
+    :return:
+    '''
+    names = ['x', 'tx', 'allx', 'graph']
+    objects = []
+    for i in range(len(names)):
+        load = pkl.load(open("data/ind.{}.{}".format(data, names[i]), 'rb'), encoding='latin1')
+        # print('loaded')
+        objects.append(load)
+        # print(load)
+    x, tx, allx, graph = tuple(objects)
+    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(data))
+    test_idx_range = np.sort(test_idx_reorder)
+
+    if data == 'citeseer':
+        # Fix citeseer dataset (there are some isolated nodes in the graph)
+        # Find isolated nodes, add them as zero-vecs into the right position
+        test_idx_range_full = range(min(test_idx_reorder), max(test_idx_reorder) + 1)
+        tx_extended = sp.lil_matrix((len(test_idx_range_full), x.shape[1]))
+        tx_extended[test_idx_range - min(test_idx_range), :] = tx
+        tx = tx_extended
+
+    features = sp.vstack((allx, tx)).tolil()
+    features[test_idx_reorder, :] = features[test_idx_range, :]
+    G = nx.from_dict_of_lists(graph)
+    adj = nx.adjacency_matrix(G)
+    return adj, features, G
+
+def parse_index_file(filename):
+    index = []
+    for line in open(filename):
+        index.append(int(line.strip()))
+    return index
 
 def Prot_Enz(name):
     G = nx.Graph()
@@ -57,6 +96,8 @@ def Prot_Enz(name):
 
 
 def connected_component_subgraphs(G):
+
+    # (G.subgraph(c) for c in nx.connected_components(G))
     for c in nx.connected_components(G):
         yield G.subgraph(c)
 
@@ -274,12 +315,8 @@ if __name__ == "__main__":
         graphs = []
         num_communities = int(2)
         print("Creating dataset with ", num_communities, "communities")
-        # c_sizes = np.random.choice([10, 25], num_communities)
 
-        # c_sizes = [40, 50, 60]
-        # graphs.append(n_community(c_sizes, p_inter=0.0005))
-        # c_sizes = [5, 15, 25]
-        c_sizes = [60, 70]
+        c_sizes = [40, 50, 60]
         graphs.append(n_community(c_sizes, p_inter=0.005))
         print("nodes", graphs[0].number_of_nodes())
         print("edges", graphs[0].number_of_edges())
@@ -292,11 +329,7 @@ if __name__ == "__main__":
         for i, j in G_sub.edges():
             adj[i, j] = 1
         A.append(adj)
-        print(
-            "# of nodes and edges orig",
-            G_sub.number_of_nodes(),
-            G_sub.number_of_edges(),
-        )
+        print("# of nodes and edges orig", G_sub.number_of_nodes(), G_sub.number_of_edges())
         P_orig.append(np.eye(G_sub.number_of_nodes()))
         for i in range(199):
             G, P, adj = perm(G_sub, one_noise=0.95, zero_noise=0.005)
@@ -304,141 +337,31 @@ if __name__ == "__main__":
             print("# of nodes and edges", G.number_of_nodes(), G.number_of_edges())
             P_orig.append(P)
             A.append(adj)
-        save_graph_list(graphs, "2Community_graphs")
+        save_graph_list(graphs, "Community_graphs")
 
-        np.save("2_" + args.graph, P_orig)
-        np.save("2_" + args.graph, A)
+        np.save(args.graph, P_orig)
+        np.save(args.graph, A)
 
     if args.graph == "ego":
-        """
-        n = 255500
-        m = 25
-        graphs= []
-        for i in range(200):
+        n = 950
+        m = 5
+        cnt= 0
+        g_orig= []
+        for i in range(100):
             G = nx.generators.barabasi_albert_graph(n, m)
             # find node with largest degree
             node_and_degree = G.degree()
-            # list1 = [(k, v) for k, v in node_and_degree.items()]
-            # node_and_degree = list1
-            # print("node_and_degree", node_and_degree)
+            list1 = [(k, v) for k, v in node_and_degree.items()]
+            node_and_degree = list1
             (largest_hub, degree) = sorted(node_and_degree, key=itemgetter(1))[-1]
+
             # Create ego graph of main hub
             hub_ego = nx.ego_graph(G, largest_hub)
-            print("number of nodes and edges", hub_ego.number_of_nodes(), hub_ego.number_of_edges())
-            # if hub_ego.number_of_nodes()>5000 and hub_ego.number_of_nodes()<1100:
-            graphs.append(hub_ego)
+            if hub_ego.number_of_nodes()>=100 and hub_ego.number_of_nodes()<=150:
+                cnt= cnt+1
+                g_orig.append(hub_ego)
+        save_graph_list(g_orig, "Ego_graphs")
 
-        print("# of graphs", len(graphs))
-        save_graph_list(graphs, "ego_super_biggraphs")
-        """
-        with open("ego_super_biggraphs", "rb") as f:
-
-            graphs = pickle.load(f, encoding="latin1")
-
-        print("len(graphs)", len(graphs))
-        cnt = 0
-        cnt1 = 0
-        cnt2 = 0
-        cnt3 = 0
-        cnt4 = 0
-        cnt5 = 0
-        cnt6 = 0
-        cnt7 = 0
-        cnt8 = 0
-        cnt9 = 0
-        g = []
-        for i in range(len(graphs)):
-            if (
-                graphs[i].number_of_nodes() >= 4000
-                and graphs[i].number_of_nodes() < 4100
-            ):
-                cnt1 = cnt1 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4100
-                and graphs[i].number_of_nodes() < 4200
-            ):
-                cnt2 = cnt2 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4200
-                and graphs[i].number_of_nodes() < 4300
-            ):
-                cnt3 = cnt3 + 1
-                g.append(graphs[i])
-            if (
-                graphs[i].number_of_nodes() >= 4300
-                and graphs[i].number_of_nodes() < 4400
-            ):
-                cnt4 = cnt4 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4400
-                and graphs[i].number_of_nodes() < 4500
-            ):
-                cnt5 = cnt5 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4500
-                and graphs[i].number_of_nodes() < 4600
-            ):
-                cnt6 = cnt6 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4600
-                and graphs[i].number_of_nodes() < 4700
-            ):
-                cnt7 = cnt7 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4700
-                and graphs[i].number_of_nodes() < 4800
-            ):
-                cnt8 = cnt8 + 1
-            if (
-                graphs[i].number_of_nodes() >= 4800
-                and graphs[i].number_of_nodes() < 4900
-            ):
-                cnt9 = cnt9 + 1
-
-        save_graph_list(g, "ego_super_graphs")
-        print("len(g)", len(g))
-        print(
-            "cnt1, cnt2, cnt3, cnt4, cnt5, cnt6, cnt7, cnt8, cnt9",
-            cnt1,
-            cnt2,
-            cnt3,
-            cnt4,
-            cnt5,
-            cnt6,
-            cnt7,
-            cnt8,
-            cnt9,
-        )
-        """
-        graphs = []
-        graphs.append(hub_ego)
-        print("nodes", graphs[0].number_of_nodes())
-        print("edges", graphs[0].number_of_edges())
-        G_sub = graphs[0]
-        P_orig = []
-        P_orig.append(np.eye(G_sub.number_of_nodes()))
-
-        A = []
-        adj= nx.to_numpy_matrix(G_sub)
-        # adj = np.zeros((len(G_sub), len(G_sub)))
-        # print("G_sub.edges(), G_sub.nodes()", G_sub.edges(), G_sub.nodes())
-        # for i, j in G_sub.edges():
-        #     adj[i, j] = 1
-        A.append(adj)
-
-        for i in range(299):
-            G, P, adj = perm(G_sub, one_noise=0.99, zero_noise=0.001)
-            graphs.append(G)
-            P_orig.append(P)
-            A.append(adj)
-        save_graph_list(graphs, "ego_biggraphs")
-        np.save("P_bigorig_" + args.graph + ".npy", P_orig)
-        np.save("A_big" + args.graph, A)
-        """
-        # for i in range(0, 16, 16):
-        #     draw_graph_list(
-        #         graphs[i : i + 16], 4, 4, fname="figures/test/ego_" + str(i)
-        #     )
 
     if args.graph == "grid":
         n = 6
@@ -467,9 +390,10 @@ if __name__ == "__main__":
             graphs.append(G)
             P_orig.append(P)
             A.append(adj)
-        save_graph_list(graphs, "test_grid_graphs")
+        save_graph_list(graphs, "grid_graphs")
         np.save("P_test_" + args.graph, P_orig)
         np.save("A_test" + args.graph, A)
+
     if args.graph == "DD":
         graphs = Graph_load_batch(
             min_num_nodes=100,
@@ -502,7 +426,7 @@ if __name__ == "__main__":
         )
         A = []
         graphs_list = []
-        for i in range(8):
+        for i in range(100):
             G_sub = graphs[i]
             graphs_list.append(G_sub)
             P_orig = []
@@ -510,12 +434,23 @@ if __name__ == "__main__":
             adj = nx.to_numpy_matrix(G_sub)
             A.append(adj)
             print("number of edges", G_sub.number_of_edges())
-            for j in range(25):
-                G, P, adj = perm(G_sub, one_noise=0.99, zero_noise=0.001)
-                print("number of edges with noise", G.number_of_edges())
-                print("||A||", np.linalg.norm(nx.adjacency_matrix(G).todense()))
-                graphs_list.append(G)
-                P_orig.append(P)
-                A.append(adj)
         print("len(graphs_list)", len(graphs_list))
-        # save_graph_list(graphs_list, "DD_graphs_perm")
+        save_graph_list(graphs_list, "DD_graphs")
+
+    if args.graph == 'citeseer_small':
+        _, _, G = Graph_load(data='citeseer')
+        # G = max(nx.connected_component_subgraphs(G), key=len)
+        G= max(connected_component_subgraphs(G), key=len)
+        G = nx.convert_node_labels_to_integers(G)
+        graphs = []
+        adj_list= []
+        for i in range(G.number_of_nodes()):
+            G_ego = nx.ego_graph(G, i, radius=3)
+            if (G_ego.number_of_nodes() >= 30) and (G_ego.number_of_nodes() <= 40):
+                graphs.append(G_ego)
+                adj_list.append(nx.adjacency_matrix(G_ego).todense())
+        np.save("citeseer_adj_orig", adj_list)
+        print("len(graphs)", len(graphs))
+        save_graph_list(graphs, "citseer_graphs_orig")
+        graphs = graphs[0:200]
+        args.max_prev_node = 15
