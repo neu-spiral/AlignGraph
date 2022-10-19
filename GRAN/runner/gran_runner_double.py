@@ -171,13 +171,13 @@ class GranRunner(object):
         min_deg = min(mindeg)
 
         # Upload the center graph adjacency matrix.
-        A_cent_rec_cls = np.load("A_cent_smallcomm.npy")
+        A_cent_rec_cls = np.load("A_cent.npy")
         for i in range(len(A_cent_rec_cls)):
             if A_cent_rec_cls[i, i] == 1:
                 A_cent_rec_cls[i, i] = 0
         print("len(A)", len(A_cent_rec_cls))
         # Upload aligned graphs adjacency matrices.
-        A_total_cls = np.load("A_align_SmallComm.npy")
+        A_total_cls = np.load("A_align.npy")
         for j in range(len(A_total_cls)):
             for i in range(len(A_total_cls[j])):
                 if A_total_cls[j][i, i] == 1:

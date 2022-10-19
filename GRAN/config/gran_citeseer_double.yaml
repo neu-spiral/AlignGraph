@@ -12,7 +12,7 @@ dataset:
   dir: citeseer_graphs_orig
   name: citeseer
   data_path: data/
-  node_order: DFS # k_core/BFS/degree_decent
+  node_order: Alignment # k_core/BFS/degree_decent
   train_ratio: 0.8
   dev_ratio: 0.2
   num_subgraph_batch: 1 # number of subgraphs per mini-batch

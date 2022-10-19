@@ -548,7 +548,7 @@ def main(argv=None):
 
     n_train = int(0.8 * len(graphs))
     n_test = int(0.2 * len(graphs))
-    # graph_train = graphs [0: n_train]
+    graph_train = graphs[0:n_train]
 
     A_list = []
     all_deg = []

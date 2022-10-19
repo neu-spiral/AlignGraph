@@ -152,7 +152,7 @@ class GCNModelAE(Model):
         self.outputs = tf.nn.l2_normalize(self.outputs, 1)
 
         self.reconstructions = layers.InnerProductDecoder(
-            input_dim=self.output_dim, P=self.P, act=lambda x: x, logging=self.logging
+            input_dim=self.output_dim, act=lambda x: x, logging=self.logging
         )(self.outputs)
 
     def build(self):
@@ -258,7 +258,6 @@ class GCNModelVAE(Model):
 
         self.reconstructions = layers.InnerProductDecoder(
             input_dim=self.output_dim,
-            P=self.P,
             act=lambda x: x,
             logging=self.logging,
         )(self.z)

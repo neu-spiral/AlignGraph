@@ -823,7 +823,7 @@ if __name__ == "__main__":
         A_cent_final = np.array([bin[i] for i in range(len(A_cent_final))])
         print("len(A_cent_final)", len(A_cent_final), A_cent_final)
 
-        np.save("A_cent_smallcomm", A_cent_final)
+        np.save("A_cent", A_cent_final)
 
     else:
         print("Compute alignments")
@@ -884,5 +884,5 @@ if __name__ == "__main__":
             print("# of nodes", len(G_align[i].nodes()))
 
         print("Final alignment: total time", time.time() - t0)
-        np.save("A_align_SmallComm_noise5", A_align)
-        save_graph_list(G_align, "G_align_Smallcomm_noise5")
+        np.save("A_align_final", A_align)
+        save_graph_list(G_align, "G_align_final")

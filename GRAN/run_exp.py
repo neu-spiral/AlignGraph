@@ -7,7 +7,7 @@ import numpy as np
 from validation import validation_score
 from pprint import pprint
 
-from runner import *
+from runner.gran_runner import *
 from utils.logger import setup_logging
 from utils.arg_helper import parse_arguments, get_config
 

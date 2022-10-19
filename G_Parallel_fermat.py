@@ -131,9 +131,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--center", type=str2bool, default=True)
+    parser.add_argument("--data", type=str)
     args = parser.parse_args()
 
-    with open("test_grid_graphs", "rb") as f:
+    with open(args.data, "rb") as f:
 
         graphs = pickle.load(f, encoding="latin1")
 

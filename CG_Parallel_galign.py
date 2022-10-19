@@ -994,9 +994,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--center", type=str2bool, default=True)
+    parser.add_argument("--data", type=str)
     args = parser.parse_args()
 
-    with open("Ego_graphs_orig", "rb") as f:
+    with open(args.data, "rb") as f:
 
         graphs = pickle.load(f, encoding="latin1")
 
@@ -1200,7 +1201,7 @@ if __name__ == "__main__":
         print("len(A_final_cls), len(P_final)", len(A_final_cls), len(P_final))
 
         print("total time", time.time() - t0)
-        np.save("A_align_super_EgoFinal", A_final_cls)
+        np.save("A_align_Final", A_final_cls)
         score = 0
         for i in range(len(A_final_cls)):
             score = score + np.linalg.norm(A_final_cls[i][0] - A_cent_rec_cls)

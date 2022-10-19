@@ -9,10 +9,8 @@ import torch.nn.functional as F
 from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
 from sklearn.decomposition import PCA
-import community
 import pickle
 import re
-import data
 
 # DISCLAIMER:
 # Boilerplate parts of this code file were originally forked from

@@ -48,10 +48,10 @@ if __name__ == "__main__":
             shutil.rmtree("tensorboard")
     configure("tensorboard/run" + str(time), flush_secs=5)
 
-    with open("SmallCommunity_graphs5new1", "rb") as f:
+    with open("graph-name", "rb") as f:
         graphs = pickle.load(f, encoding="latin1")
 
-    graph_list = graphs[0:40]
+    graph_list = graphs
     # print("# of nodes", len(graphs_main[0].nodes()))
     A_list = []
     all_deg = []
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     print("min_deg, args.num_batch, args.note", min_deg, args.num_batch, args.note)
 
     # Upload adjacency matrix of aligned graphs
-    adj_align = np.load("A_align_SmallComm_noise5.npy")
+    adj_align = np.load("A_align.npy")
 
     graphs_train = []
     num_nodes = []

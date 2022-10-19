@@ -10,7 +10,6 @@ from tqdm import tqdm
 import concurrent.futures
 import cvxpy
 import cvxpy as cp
-from center_check import center_check
 import multiprocessing
 from multiprocessing import Pool
 from multiprocessing import Process, Queue
@@ -155,7 +154,7 @@ class GranRunner(object):
             self.graphs[i].remove_edges_from(nx.selfloop_edges(self.graphs[i]))
 
         # upload aligned adjacen
-        adj_align = np.load("A_align_SmallComm.npy")
+        adj_align = np.load("A_align.npy")
 
         graphs = []
         num_nodes = []

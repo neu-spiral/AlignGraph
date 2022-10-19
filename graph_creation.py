@@ -15,16 +15,18 @@ from operator import itemgetter
 # https://github.com/JiaxuanYou/graph-generation/
 
 # load cora, citeseer and pubmed dataset
-def Graph_load(data = 'cora'):
-    '''
+def Graph_load(data="cora"):
+    """
     Load a single graph dataset
     :param dataset: dataset name
     :return:
-    '''
-    names = ['x', 'tx', 'allx', 'graph']
+    """
+    names = ["x", "tx", "allx", "graph"]
     objects = []
     for i in range(len(names)):
-        load = pkl.load(open("data/ind.{}.{}".format(data, names[i]), 'rb'), encoding='latin1')
+        load = pkl.load(
+            open("data/ind.{}.{}".format(data, names[i]), "rb"), encoding="latin1"
+        )
         # print('loaded')
         objects.append(load)
         # print(load)
@@ -32,7 +34,7 @@ def Graph_load(data = 'cora'):
     test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(data))
     test_idx_range = np.sort(test_idx_reorder)
 
-    if data == 'citeseer':
+    if data == "citeseer":
         # Fix citeseer dataset (there are some isolated nodes in the graph)
         # Find isolated nodes, add them as zero-vecs into the right position
         test_idx_range_full = range(min(test_idx_reorder), max(test_idx_reorder) + 1)
@@ -46,11 +48,13 @@ def Graph_load(data = 'cora'):
     adj = nx.adjacency_matrix(G)
     return adj, features, G
 
+
 def parse_index_file(filename):
     index = []
     for line in open(filename):
         index.append(int(line.strip()))
     return index
+
 
 def Prot_Enz(name):
     G = nx.Graph()
@@ -329,7 +333,11 @@ if __name__ == "__main__":
         for i, j in G_sub.edges():
             adj[i, j] = 1
         A.append(adj)
-        print("# of nodes and edges orig", G_sub.number_of_nodes(), G_sub.number_of_edges())
+        print(
+            "# of nodes and edges orig",
+            G_sub.number_of_nodes(),
+            G_sub.number_of_edges(),
+        )
         P_orig.append(np.eye(G_sub.number_of_nodes()))
         for i in range(199):
             G, P, adj = perm(G_sub, one_noise=0.95, zero_noise=0.005)
@@ -345,8 +353,8 @@ if __name__ == "__main__":
     if args.graph == "ego":
         n = 950
         m = 5
-        cnt= 0
-        g_orig= []
+        cnt = 0
+        g_orig = []
         for i in range(100):
             G = nx.generators.barabasi_albert_graph(n, m)
             # find node with largest degree
@@ -357,11 +365,10 @@ if __name__ == "__main__":
 
             # Create ego graph of main hub
             hub_ego = nx.ego_graph(G, largest_hub)
-            if hub_ego.number_of_nodes()>=100 and hub_ego.number_of_nodes()<=150:
-                cnt= cnt+1
+            if hub_ego.number_of_nodes() >= 100 and hub_ego.number_of_nodes() <= 150:
+                cnt = cnt + 1
                 g_orig.append(hub_ego)
         save_graph_list(g_orig, "Ego_graphs")
-
 
     if args.graph == "grid":
         n = 6
@@ -437,13 +444,13 @@ if __name__ == "__main__":
         print("len(graphs_list)", len(graphs_list))
         save_graph_list(graphs_list, "DD_graphs")
 
-    if args.graph == 'citeseer_small':
-        _, _, G = Graph_load(data='citeseer')
+    if args.graph == "citeseer_small":
+        _, _, G = Graph_load(data="citeseer")
         # G = max(nx.connected_component_subgraphs(G), key=len)
-        G= max(connected_component_subgraphs(G), key=len)
+        G = max(connected_component_subgraphs(G), key=len)
         G = nx.convert_node_labels_to_integers(G)
         graphs = []
-        adj_list= []
+        adj_list = []
         for i in range(G.number_of_nodes()):
             G_ego = nx.ego_graph(G, i, radius=3)
             if (G_ego.number_of_nodes() >= 30) and (G_ego.number_of_nodes() <= 40):

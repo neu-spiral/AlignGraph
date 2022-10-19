@@ -713,7 +713,7 @@ def main(argv=None):
     with open(FLAGS.data, "rb") as f:
 
         graphs = pickle.load(f, encoding="latin1")
-
+    # Upload aligned adjacency matrices
     adj_list = np.load("A_align_citeseer.npy")
 
     n_train = int(0.8 * len(graphs))
@@ -761,7 +761,7 @@ def main(argv=None):
             graphs[i] = nx.from_numpy_matrix(adj_tmp)
 
         graph_train = graphs[0:80]
-
+        # Upload the center graph
         A0_cent = np.load("A_cent_citeseer.npy")
 
         G0 = nx.from_numpy_matrix(A0_cent)
